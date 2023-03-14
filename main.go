@@ -3,13 +3,28 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	// Load the HTML document
+
+	router := mux.NewRouter()
+
+	router.HandleFunc("/news", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(scrape()))
+	})
+
+	log.Println("API is running!")
+	http.ListenAndServe(":4000", router)
+
+}
+
+func scrape() string {
 	doc, err := goquery.NewDocument("https://www.bmkg.go.id/")
 	if err != nil {
 		log.Fatal(err)
@@ -34,8 +49,8 @@ func main() {
 	})
 
 	var result = "[" + strings.Join(data, ",") + "]"
-	fmt.Println(result)
 
+	return result
 }
 
 // function get image src from row
